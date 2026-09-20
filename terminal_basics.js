@@ -1,5 +1,6 @@
 const { renderDigit } = require("./digits");
 const { ansiColors } = require("./ansi_constants");
+const { menuItems, moveSelection, renderMenu } = require("./menu");
 
 const bottomStatusBar = (text) => {
   const row = process.stdout.rows;
@@ -24,15 +25,31 @@ process.stdout.write("\x1b[?7l"); // Disable scrolling
 let timer;
 let clockTopRow;
 let clockColorIndex = 0;
+let use24HourTime = true;
+let menuOpen = false;
+let selectedMenuItem = 0;
 
 const formatTime = () => {
   const now = new Date();
-  const hours = String(now.getHours()).padStart(2, "0");
+  let hours = now.getHours();
+
+  if (!use24HourTime) {
+    hours = hours % 12 || 12;
+  }
+
+  const formattedHours = String(hours).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const seconds = String(now.getSeconds()).padStart(2, "0");
 
-  return `${hours}:${minutes}:${seconds}`;
+  return `${formattedHours}:${minutes}:${seconds}`;
 };
+
+const formatDate = () =>
+  new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(new Date());
 
 const cleanup = () => {
   clearInterval(timer);
@@ -92,11 +109,24 @@ const render = () => {
 
   writeAt(clockTopRow - 2, greetingColumn, greeting);
   renderClock();
-  bottomStatusBar("Press t to toggle color, q to exit.");
+
+  const date = formatDate();
+  const dateColumn = Math.floor((process.stdout.columns - date.length) / 2) + 1;
+  writeAt(clockTopRow + 6, dateColumn, date);
+
+  bottomStatusBar(
+    menuOpen
+      ? "j/k: move | Enter: select | Esc: close"
+      : `m: menu | t: color | f: ${use24HourTime ? "12-hour" : "24-hour"} time | q: exit`,
+  );
+
+  if (menuOpen) {
+    renderMenu(selectedMenuItem);
+  }
 };
 
 const updateTimer = () => {
-  renderClock();
+  render();
 };
 
 render();
@@ -111,10 +141,37 @@ process.stdin.resume();
 process.stdin.on("data", (key) => {
   const input = key.toString();
 
-  if (input === "t") {
+  if (menuOpen) {
+    if (input === "j") {
+      selectedMenuItem = moveSelection(selectedMenuItem, 1);
+      render();
+    } else if (input === "k") {
+      selectedMenuItem = moveSelection(selectedMenuItem, -1);
+      render();
+    } else if (input === "\r" || input === "\n") {
+      if (menuItems[selectedMenuItem] === "Theme") {
+        clockColorIndex = (clockColorIndex + 1) % ansiColors.length;
+      } else if (menuItems[selectedMenuItem] === "Time format") {
+        use24HourTime = !use24HourTime;
+      } else {
+        menuOpen = false;
+      }
+      render();
+    } else if (input === "\u001b" || input === "q") {
+      menuOpen = false;
+      render();
+    } else if (input === "\u0003") {
+      cleanup();
+    }
+  } else if (input === "m") {
+    menuOpen = true;
+    render();
+  } else if (input === "t") {
     clockColorIndex = (clockColorIndex + 1) % ansiColors.length;
-    renderClock();
-    bottomStatusBar("Press t to toggle color, q to exit.");
+    render();
+  } else if (input === "f") {
+    use24HourTime = !use24HourTime;
+    render();
   } else if (input === "\u0003" || input === "q") {
     cleanup();
   }
