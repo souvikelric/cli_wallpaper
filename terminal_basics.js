@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { renderDigit } = require("./digits");
-const { ansiColors } = require("./ansi_constants");
+const { ansiColors, terminalSetup } = require("./ansi_constants");
 const { menuItems, moveSelection, renderMenu } = require("./menu");
 
 const bottomStatusBar = (text) => {
@@ -19,10 +19,7 @@ const bottomStatusBar = (text) => {
   process.stdout.write(`\x1b[${row};1H${coloredText}`); // Write the status bar text
 };
 
-// Terminal setup
-process.stdout.write("\x1b[?1049h"); // Alternate screen
-process.stdout.write("\x1b[?25l"); // Hide cursor
-process.stdout.write("\x1b[?7l"); // Disable scrolling
+terminalSetup();
 
 let timer;
 let clockTopRow;

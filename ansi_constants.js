@@ -15,4 +15,11 @@ const ansiColors = [
   { clock: "\x1b[97m", background: "\x1b[107m" },
 ];
 
-module.exports = { ansiColors };
+const terminalSetup = () => {
+  // Terminal setup
+  process.stdout.write("\x1b[?1049h"); // Alternate screen
+  process.stdout.write("\x1b[?25l"); // Hide cursor
+  process.stdout.write("\x1b[?7l"); // Disable scrolling
+};
+
+module.exports = { ansiColors, terminalSetup };
