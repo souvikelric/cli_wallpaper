@@ -1,0 +1,32 @@
+{
+  "name": "cli-wallpaper",
+  "version": "1.0.0",
+  "description": "A terminal wallpaper with a live clock and interactive menu.",
+  "main": "terminal_basics.js",
+  "bin": {
+    "cli-wallpaper": "./terminal_basics.js"
+  },
+  "scripts": {
+    "start": "node terminal_basics.js",
+    "check": "node --check terminal_basics.js && node --check menu.js && node --check digits.js && node --check ansi_constants.js",
+    "pack:check": "npm pack --dry-run"
+  },
+  "keywords": [
+    "cli",
+    "terminal",
+    "clock",
+    "wallpaper"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  },
+  "files": [
+    "terminal_basics.js",
+    "menu.js",
+    "digits.js",
+    "ansi_constants.js",
+    "README.md"
+  ]
+}

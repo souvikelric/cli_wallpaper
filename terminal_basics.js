@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { renderDigit } = require("./digits");
 const { ansiColors } = require("./ansi_constants");
 const { menuItems, moveSelection, renderMenu } = require("./menu");
@@ -54,7 +56,9 @@ const formatDate = () =>
 const cleanup = () => {
   clearInterval(timer);
 
-  process.stdin.setRawMode(false);
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(false);
+  }
   process.stdin.pause();
 
   process.stdout.write("\x1b[?25h");
@@ -128,6 +132,11 @@ const render = () => {
 const updateTimer = () => {
   renderClock();
 };
+
+if (!process.stdin.isTTY || !process.stdout.isTTY) {
+  console.error("cli-wallpaper must be run in an interactive terminal.");
+  process.exit(1);
+}
 
 render();
 
