@@ -82,7 +82,7 @@ const renderClock = () => {
   const startColumn = Math.floor((process.stdout.columns - clockWidth) / 2) + 1;
 
   for (let row = 0; row < 5; row++) {
-    writeAt(clockTopRow + row, 1, "\x1b[2K");
+    writeAt(clockTopRow + row, startColumn, `\x1b[0m${" ".repeat(clockWidth)}`);
   }
 
   let column = startColumn;
@@ -126,7 +126,7 @@ const render = () => {
 };
 
 const updateTimer = () => {
-  render();
+  renderClock();
 };
 
 render();

@@ -17,27 +17,24 @@ const moveSelection = (selectedIndex, direction) => {
 const renderMenu = (selectedIndex) => {
   const width = 32;
   const top = Math.max(1, Math.floor((process.stdout.rows - 7) / 2));
-  const left = Math.max(1, Math.floor((process.stdout.columns - width) / 2));
-  const background = "\x1b[103m";
-  const foreground = "\x1b[97m";
+  const left = Math.max(1, process.stdout.columns - width - 2);
   const reset = "\x1b[0m";
-  const drawRow = (text) =>
-    `\x1b[${top};${left}H${background}${foreground}${text.padEnd(width)}${reset}`;
+  const horizontalLine = "─".repeat(width - 2);
+  const drawRow = (row, text) =>
+    `\x1b[${row};${left}H${text.padEnd(width)}${reset}`;
 
-  process.stdout.write(drawRow("+" + "-".repeat(width - 2) + "+"));
-  process.stdout.write(
-    `\x1b[${top + 1};${left}H${background}${foreground}|${" Menu".padEnd(width - 1)}|${reset}`,
-  );
+  process.stdout.write(drawRow(top, `╭${horizontalLine}╮`));
+  process.stdout.write(drawRow(top + 1, `│${" Menu".padEnd(width - 2)}│`));
 
   menuItems.forEach((item, index) => {
     const marker = index === selectedIndex ? ">" : " ";
-    const text = `| ${marker} ${item}`.padEnd(width - 1) + "|";
-    process.stdout.write(
-      `\x1b[${top + 2 + index};${left}H${background}${foreground}${text}${reset}`,
-    );
+    const text = `│ ${marker} ${item}`.padEnd(width - 1) + "│";
+    process.stdout.write(drawRow(top + 2 + index, text));
   });
 
-  process.stdout.write(drawRow("+" + "-".repeat(width - 2) + "+"));
+  process.stdout.write(
+    drawRow(top + 2 + menuItems.length, `╰${horizontalLine}╯`),
+  );
 };
 
 module.exports = { menuItems, moveSelection, renderMenu };
