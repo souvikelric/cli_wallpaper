@@ -178,3 +178,9 @@ process.stdin.on("data", (key) => {
 });
 
 process.on("SIGINT", cleanup);
+
+// if error occurs, cleanup and exit
+process.on("uncaughtException", (err) => {
+  console.error("An error occurred:", err);
+  cleanup();
+});
