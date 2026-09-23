@@ -3,7 +3,11 @@
 const { renderDigit } = require("./digits");
 const { ansiColors, terminalSetup } = require("./ansi_constants");
 const { menuItems, moveSelection, renderMenu } = require("./menu");
-const { loadWallpaper, renderWallpaper } = require("./image_renderer");
+const {
+  getWallpaperCount,
+  loadWallpaper,
+  renderWallpaper,
+} = require("./image_renderer");
 
 const bottomStatusBar = (text) => {
   const row = process.stdout.rows;
@@ -29,6 +33,8 @@ let use24HourTime = true;
 let menuOpen = false;
 let selectedMenuItem = 0;
 let wallpaper = "";
+let wallpaperIndex = 0;
+let wallpaperName = "";
 
 const formatTime = () => {
   const now = new Date();
@@ -123,7 +129,7 @@ const render = () => {
 
   bottomStatusBar(
     menuOpen
-      ? "j/k: move | Enter: select | Esc: close"
+      ? `j/k: move | Enter: select | Esc: close | ${wallpaperName}`
       : `m: menu | t: color | f: ${use24HourTime ? "12-hour" : "24-hour"} time | q: exit`,
   );
 
@@ -136,8 +142,11 @@ const updateTimer = () => {
   render();
 };
 
-const refreshWallpaper = async () => {
-  wallpaper = await loadWallpaper();
+const refreshWallpaper = async (nextIndex = wallpaperIndex) => {
+  const loadedWallpaper = await loadWallpaper(nextIndex);
+  wallpaper = loadedWallpaper.image;
+  wallpaperIndex = loadedWallpaper.index;
+  wallpaperName = loadedWallpaper.name;
   render();
 };
 
@@ -175,7 +184,12 @@ process.stdin.on("data", (key) => {
       selectedMenuItem = moveSelection(selectedMenuItem, -1);
       render();
     } else if (input === "\r" || input === "\n") {
-      if (menuItems[selectedMenuItem] === "Theme") {
+      if (menuItems[selectedMenuItem] === "Wallpaper") {
+        refreshWallpaper(wallpaperIndex + 1).catch((error) => {
+          console.error("Unable to change wallpaper:", error.message);
+        });
+        return;
+      } else if (menuItems[selectedMenuItem] === "Theme") {
         clockColorIndex = (clockColorIndex + 1) % ansiColors.length;
       } else if (menuItems[selectedMenuItem] === "Time format") {
         use24HourTime = !use24HourTime;

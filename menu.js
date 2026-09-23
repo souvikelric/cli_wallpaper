@@ -1,4 +1,4 @@
-const menuItems = ["Theme", "Time format", "Close"];
+const menuItems = ["Wallpaper", "Theme", "Time format", "Close"];
 
 const moveSelection = (selectedIndex, direction) => {
   const nextIndex = selectedIndex + direction;

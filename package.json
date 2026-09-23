@@ -28,9 +28,9 @@
     "digits.js",
     "ansi_constants.js",
     "image_renderer.js",
-    "*.png",
-    "*.jpg",
-    "*.jpeg",
+    "wallpapers/*.png",
+    "wallpapers/*.jpg",
+    "wallpapers/*.jpeg",
     "README.md"
   ],
   "dependencies": {
