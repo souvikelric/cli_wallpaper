@@ -3,11 +3,7 @@
 const { renderDigit } = require("./digits");
 const { ansiColors, terminalSetup } = require("./ansi_constants");
 const { menuItems, moveSelection, renderMenu } = require("./menu");
-const {
-  getWallpaperCount,
-  loadWallpaper,
-  renderWallpaper,
-} = require("./image_renderer");
+const { loadWallpaper, renderWallpaper } = require("./image_renderer");
 
 const bottomStatusBar = (text) => {
   const row = process.stdout.rows;
@@ -107,7 +103,7 @@ const renderClock = () => {
   }
 };
 
-const render = () => {
+const renderHome = () => {
   if (wallpaper) {
     renderWallpaper(wallpaper);
   } else {
@@ -128,18 +124,22 @@ const render = () => {
   writeAt(clockTopRow + 6, dateColumn, date);
 
   bottomStatusBar(
-    menuOpen
-      ? `j/k: move | Enter: select | Esc: close | ${wallpaperName}`
-      : `m: menu | t: color | f: ${use24HourTime ? "12-hour" : "24-hour"} time | q: exit`,
+    `m: menu | t: color | f: ${use24HourTime ? "12-hour" : "24-hour"} time | q: exit`,
   );
+};
 
-  if (menuOpen) {
-    renderMenu(selectedMenuItem);
-  }
+const renderMenuView = () => {
+  renderMenu(selectedMenuItem, {
+    Wallpaper: wallpaperName || "none",
+    Theme: `color ${clockColorIndex + 1}`,
+    "Time format": use24HourTime ? "24-hour" : "12-hour",
+  });
 };
 
 const updateTimer = () => {
-  render();
+  if (!menuOpen) {
+    renderHome();
+  }
 };
 
 const refreshWallpaper = async (nextIndex = wallpaperIndex) => {
@@ -147,7 +147,11 @@ const refreshWallpaper = async (nextIndex = wallpaperIndex) => {
   wallpaper = loadedWallpaper.image;
   wallpaperIndex = loadedWallpaper.index;
   wallpaperName = loadedWallpaper.name;
-  render();
+  if (menuOpen) {
+    renderMenuView();
+  } else {
+    renderHome();
+  }
 };
 
 if (!process.stdin.isTTY || !process.stdout.isTTY) {
@@ -158,13 +162,18 @@ if (!process.stdin.isTTY || !process.stdout.isTTY) {
 refreshWallpaper()
   .catch((error) => {
     console.error("Unable to render wallpaper:", error.message);
-    render();
+    renderHome();
   })
   .finally(() => {
     timer = setInterval(updateTimer, 1000);
   });
 
 process.stdout.on("resize", () => {
+  if (menuOpen) {
+    renderMenuView();
+    return;
+  }
+
   refreshWallpaper().catch((error) => {
     console.error("Unable to resize wallpaper:", error.message);
   });
@@ -179,10 +188,10 @@ process.stdin.on("data", (key) => {
   if (menuOpen) {
     if (input === "j") {
       selectedMenuItem = moveSelection(selectedMenuItem, 1);
-      render();
+      renderMenuView();
     } else if (input === "k") {
       selectedMenuItem = moveSelection(selectedMenuItem, -1);
-      render();
+      renderMenuView();
     } else if (input === "\r" || input === "\n") {
       if (menuItems[selectedMenuItem] === "Wallpaper") {
         refreshWallpaper(wallpaperIndex + 1).catch((error) => {
@@ -196,22 +205,22 @@ process.stdin.on("data", (key) => {
       } else {
         menuOpen = false;
       }
-      render();
+      renderMenuView();
     } else if (input === "\u001b" || input === "q") {
       menuOpen = false;
-      render();
+      renderHome();
     } else if (input === "\u0003") {
       cleanup();
     }
   } else if (input === "m") {
     menuOpen = true;
-    render();
+    renderMenuView();
   } else if (input === "t") {
     clockColorIndex = (clockColorIndex + 1) % ansiColors.length;
-    render();
+    renderHome();
   } else if (input === "f") {
     use24HourTime = !use24HourTime;
-    render();
+    renderHome();
   } else if (input === "\u0003" || input === "q") {
     cleanup();
   }
