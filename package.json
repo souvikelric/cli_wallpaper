@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node terminal_basics.js",
-    "check": "node --check terminal_basics.js && node --check menu.js && node --check digits.js && node --check ansi_constants.js",
+    "check": "node --check terminal_basics.js && node --check menu.js && node --check digits.js && node --check ansi_constants.js && node --check image_renderer.js",
     "pack:check": "npm pack --dry-run"
   },
   "keywords": [
@@ -27,7 +27,13 @@
     "menu.js",
     "digits.js",
     "ansi_constants.js",
-    "Charizard.png",
+    "image_renderer.js",
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
     "README.md"
-  ]
+  ],
+  "dependencies": {
+    "terminal-image": "^5.0.1"
+  }
 }

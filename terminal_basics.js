@@ -3,6 +3,7 @@
 const { renderDigit } = require("./digits");
 const { ansiColors, terminalSetup } = require("./ansi_constants");
 const { menuItems, moveSelection, renderMenu } = require("./menu");
+const { loadWallpaper, renderWallpaper } = require("./image_renderer");
 
 const bottomStatusBar = (text) => {
   const row = process.stdout.rows;
@@ -27,6 +28,7 @@ let clockColorIndex = 0;
 let use24HourTime = true;
 let menuOpen = false;
 let selectedMenuItem = 0;
+let wallpaper = "";
 
 const formatTime = () => {
   const now = new Date();
@@ -100,7 +102,11 @@ const renderClock = () => {
 };
 
 const render = () => {
-  process.stdout.write("\x1b[2J\x1b[H");
+  if (wallpaper) {
+    renderWallpaper(wallpaper);
+  } else {
+    process.stdout.write("\x1b[2J\x1b[H");
+  }
 
   const clockHeight = 5;
   clockTopRow = Math.floor((process.stdout.rows - clockHeight) / 2) + 1;
@@ -127,7 +133,12 @@ const render = () => {
 };
 
 const updateTimer = () => {
-  renderClock();
+  render();
+};
+
+const refreshWallpaper = async () => {
+  wallpaper = await loadWallpaper();
+  render();
 };
 
 if (!process.stdin.isTTY || !process.stdout.isTTY) {
@@ -135,11 +146,20 @@ if (!process.stdin.isTTY || !process.stdout.isTTY) {
   process.exit(1);
 }
 
-render();
+refreshWallpaper()
+  .catch((error) => {
+    console.error("Unable to render wallpaper:", error.message);
+    render();
+  })
+  .finally(() => {
+    timer = setInterval(updateTimer, 1000);
+  });
 
-timer = setInterval(updateTimer, 1000);
-
-process.stdout.on("resize", render);
+process.stdout.on("resize", () => {
+  refreshWallpaper().catch((error) => {
+    console.error("Unable to resize wallpaper:", error.message);
+  });
+});
 
 process.stdin.setRawMode(true);
 process.stdin.resume();
