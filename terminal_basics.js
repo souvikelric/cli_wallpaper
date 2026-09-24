@@ -17,7 +17,7 @@ const bottomStatusBar = (text) => {
   const coloredText = `${background}${textColor}${paddedText}${resetColor}`;
 
   process.stdout.write(`\x1b[${row};1H\x1b[2K`); // Move to bottom row and clear it
-  process.stdout.write(`\x1b[${row};1H${coloredText}`); // Write the status bar text
+  process.stdout.write(`\x1b[${row};1H ${coloredText}`); // Write the status bar text
 };
 
 terminalSetup();
@@ -130,7 +130,8 @@ const renderHome = () => {
 
 const renderMenuView = () => {
   renderMenu(selectedMenuItem, {
-    Wallpaper: wallpaperName || "none",
+    Wallpaper: wallpaperName || "not selected",
+    "No wallpaper": wallpaper ? "off" : "on",
     Theme: `color ${clockColorIndex + 1}`,
     "Time format": use24HourTime ? "24-hour" : "12-hour",
   });
@@ -174,6 +175,11 @@ process.stdout.on("resize", () => {
     return;
   }
 
+  if (!wallpaper && wallpaperName === "No wallpaper") {
+    renderHome();
+    return;
+  }
+
   refreshWallpaper().catch((error) => {
     console.error("Unable to resize wallpaper:", error.message);
   });
@@ -198,6 +204,9 @@ process.stdin.on("data", (key) => {
           console.error("Unable to change wallpaper:", error.message);
         });
         return;
+      } else if (menuItems[selectedMenuItem] === "No wallpaper") {
+        wallpaper = "";
+        wallpaperName = "No wallpaper";
       } else if (menuItems[selectedMenuItem] === "Theme") {
         clockColorIndex = (clockColorIndex + 1) % ansiColors.length;
       } else if (menuItems[selectedMenuItem] === "Time format") {

@@ -1,4 +1,4 @@
-const menuItems = ["Wallpaper", "Theme", "Time format", "Close"];
+const menuItems = ["Wallpaper", "No wallpaper", "Theme", "Time format", "Close"];
 
 const menuTitle = [
   "█   █ █████ █   █ █   █",
