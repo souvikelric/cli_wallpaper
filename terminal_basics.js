@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const { renderDigit } = require("./digits");
+const os = require("node:os");
 const { ansiColors, terminalSetup } = require("./ansi_constants");
 const { menuItems, moveSelection, renderMenu } = require("./menu");
 const { loadWallpaper, renderWallpaper } = require("./image_renderer");
@@ -21,6 +22,18 @@ const bottomStatusBar = (text) => {
 };
 
 terminalSetup();
+
+const getMemoryUsage = () => {
+  const total = os.totalmem();
+  const free = os.freemem();
+  const used = total - free;
+  const usedPercent = ((used / total) * 100).toFixed(2);
+
+  const totalGB = (total / 1024 ** 3).toFixed(2);
+  const usedGB = (used / 1024 ** 3).toFixed(2);
+
+  return `${usedGB}GB / ${totalGB}GB (${usedPercent}%)`;
+};
 
 let timer;
 let clockTopRow;
@@ -122,9 +135,13 @@ const renderHome = () => {
   const date = formatDate();
   const dateColumn = Math.floor((process.stdout.columns - date.length) / 2) + 1;
   writeAt(clockTopRow + 6, dateColumn, date);
+  const memoryText = `Memory: ${getMemoryUsage()}`;
+  const memoryColumn =
+    Math.floor((process.stdout.columns - memoryText.length) / 2) + 1;
+  writeAt(clockTopRow + 7, memoryColumn, memoryText);
 
   bottomStatusBar(
-    `m: menu | t: color | f: ${use24HourTime ? "12-hour" : "24-hour"} time | q: exit`,
+    ` m: menu | t: color | f: ${use24HourTime ? "12-hour" : "24-hour"} time | q: exit`,
   );
 };
 
