@@ -13,11 +13,11 @@ const bottomStatusBar = (text) => {
   const textColor = "\x1b[30m";
   const resetColor = "\x1b[0m";
 
-  const paddedText = text.padEnd(col, " ");
+  const paddedText = ` ${text}`.padEnd(col, " ");
   const coloredText = `${background}${textColor}${paddedText}${resetColor}`;
 
   process.stdout.write(`\x1b[${row};1H\x1b[2K`); // Move to bottom row and clear it
-  process.stdout.write(`\x1b[${row};1H ${coloredText}`); // Write the status bar text
+  process.stdout.write(`\x1b[${row};1H${coloredText}`); // Write the status bar text
 };
 
 terminalSetup();
